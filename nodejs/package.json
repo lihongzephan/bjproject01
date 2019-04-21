@@ -1,0 +1,12 @@
+{
+  "name": "bjprojectnodejs",
+  "version": "0.0.0",
+  "description": "bjprojectnodejs",
+  "main": "app.js",
+  "author": {
+    "name": "Administrator"
+  },
+  "dependencies": {
+    "nodemailer": "^5.1.1"
+  }
+}
