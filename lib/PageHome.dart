@@ -8,7 +8,10 @@ import 'package:flutter/material.dart';
 import 'package:speech_recognition/speech_recognition.dart';
 import 'package:flutter/services.dart';
 import 'package:simple_permissions/simple_permissions.dart';
-import 'package:flutter_tts/flutter_tts.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as Pdf;
+import 'package:printing/printing.dart';
+//import 'package:flutter_tts/flutter_tts.dart';
 
 // Import Self Darts
 import 'LangStrings.dart';
@@ -46,59 +49,60 @@ class ClsHome extends StatelessWidget {
 
   final ctlServerIP = TextEditingController();
 
-  void funHomeInputAudio() {
-    //ut.showToast(listText[listText.length - 1], true);
-    //gv.listText.add(gv.listText.length.toString());
-    //gv.storeHome.dispatch(Actions.Increment);
-    //_speechRecognitionAvailable &&
-    if (!gv.sttIsListening) {
-      // Start Record
-      //gv.bolPressedRecord = false;
-      //start();
-      gv.sttStart();
-    } else if (gv.sttIsListening) {
-      // Cancel Record
-      //gv.bolPressedRecord = true;
-      //stop();
-      gv.sttCancel();
-    } else {
-      // do nothing, it should be impossible
-    }
-//    if (_speechRecognitionAvailable && !_isListening) {
-//      start();
+//  void funHomeInputAudio() {
+//    ut.funDebug('funHomeInputAudio run');
+//    //ut.showToast(listText[listText.length - 1], true);
+//    //gv.listText.add(gv.listText.length.toString());
+//    //gv.storeHome.dispatch(Actions.Increment);
+//    //_speechRecognitionAvailable &&
+//    if (!gv.sttIsListening) {
+//      // Start Record
+//      //gv.bolPressedRecord = false;
+//      //start();
+//      gv.sttStart();
+//    } else if (gv.sttIsListening) {
+//      // Cancel Record
+//      //gv.bolPressedRecord = true;
+//      //stop();
+//      gv.sttCancel();
+//    } else {
+//      // do nothing, it should be impossible
 //    }
-//    if (_isListening) {
-//      stop();
-//    }
-  }
+////    if (_speechRecognitionAvailable && !_isListening) {
+////      start();
+////    }
+////    if (_isListening) {
+////      stop();
+////    }
+//  }
 
   void funConnectServer() {
-    gv.serverIP = ctlServerIP.text;
-    gv.URI = 'http://' + gv.serverIP + ':10541';
-    gv.initSocket();
-  }
-
-  Widget RecordButton() {
-    var text = ls.gs('Record');
-    var color = Colors.greenAccent;
-    if (gv.sttIsListening) {
-      text = ls.gs('Cancel');
-      color = Colors.redAccent;
-    } else {
-      text = ls.gs('Record');
-      color = Colors.greenAccent;
+    if (ctlServerIP.text.isNotEmpty) {
+      gv.serverIP = ctlServerIP.text;
+      gv.URI = 'http://' + gv.serverIP + ':10541';
+      gv.initSocket();
     }
-    return RaisedButton(
-      shape: new RoundedRectangleBorder(
-          borderRadius: new BorderRadius.circular(sv.dblDefaultRoundRadius)),
-      textColor: Colors.white,
-      color: color,
-      onPressed: () => funHomeInputAudio(),
-      child: Text(text, style: TextStyle(fontSize: sv.dblDefaultFontSize * 1)),
-    );
   }
 
-
+//  Widget RecordButton() {
+//    var text = ls.gs('Record');
+//    var color = Colors.greenAccent;
+//    if (gv.sttIsListening) {
+//      text = ls.gs('Cancel');
+//      color = Colors.redAccent;
+//    } else {
+//      text = ls.gs('Record');
+//      color = Colors.greenAccent;
+//    }
+//    return RaisedButton(
+//      shape: new RoundedRectangleBorder(
+//          borderRadius: new BorderRadius.circular(sv.dblDefaultRoundRadius)),
+//      textColor: Colors.white,
+//      color: color,
+//      onPressed: () => funHomeInputAudio(),
+//      child: Text(text, style: TextStyle(fontSize: sv.dblDefaultFontSize * 1)),
+//    );
+//  }
 
   Widget ConnectButton() {
     var text = ls.gs('Connect');
@@ -113,53 +117,69 @@ class ClsHome extends StatelessWidget {
     );
   }
 
+  Widget PDFText() {
+    return ;
+  }
+
+  List<int> buildPdf(PdfPageFormat format) {
+    final PdfDoc pdf = PdfDoc()
+      ..addPage(Pdf.Page(
+          pageFormat: format,
+          build: (Pdf.Context context) {
+            return Pdf.ConstrainedBox(
+              //constraints: const Pdf.BoxConstraints.expand(),
+              child: Pdf.FittedBox(
+                child: Pdf.Text(
+                  "Hello World",
+                ),
+              ),
+            );
+          }));
+    gv.listText = [];
+    return pdf.save();
+  }
+
   Widget STTBody() {
-    if (gv.listText.length != 0) {
-      return Text(
-          gv.listText.length.toString() +
-              ': ' +
-              gv.listText[gv.listText.length - 1],
-          style: TextStyle(fontSize: sv.dblDefaultFontSize * 1.5));
-    } else {
-      return Text(ls.gs('PressAndSpeak'),
-          style: TextStyle(fontSize: sv.dblDefaultFontSize * 1.5));
-    }
+    return Text(gv.sttLastWords,
+        style: TextStyle(
+            fontSize: sv.dblDefaultFontSize * 1.5, color: Colors.black));
+//    if (gv.listText.length != 0) {
+//      return Text(
+//          gv.listText.length.toString() +
+//              ': ' +
+//              gv.listText[gv.listText.length - 1],
+//          style: TextStyle(fontSize: sv.dblDefaultFontSize * 1.5));
+//    } else {
+//      return Text(ls.gs('PressAndSpeak'),
+//          style: TextStyle(fontSize: sv.dblDefaultFontSize * 1.5));
+//    }
   }
 
   Widget Body() {
     return Container(
+      width: sv.dblScreenWidth,
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
           Container(
-            height: sv.dblBodyHeight,
-            width: sv.dblScreenWidth,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                Container(
-                  // width: sv.dblScreenWidth / 2,
-                  child: Center(
-                    child: STTBody(),
-                  ),
-                ),
-                Text(' '),
-                Container(
-                  // height: sv.dblBodyHeight / 4,
-                  // width: sv.dblScreenWidth / 4,
-                  child: Center(
-                    child: SizedBox(
-                      height: sv.dblDefaultFontSize * 2.5,
-                      width: sv.dblScreenWidth / 3,
-                      child: RecordButton(),
-                    ),
-                  ),
-                ),
-              ],
+            width: sv.dblScreenWidth * 0.9,
+            child: Center(
+              child: STTBody(),
             ),
           ),
+//          Text(' '),
+//          Container(
+//            // height: sv.dblBodyHeight / 4,
+//            // width: sv.dblScreenWidth / 4,
+//            child: Center(
+//              child: SizedBox(
+//                height: sv.dblDefaultFontSize * 2.5,
+//                width: sv.dblScreenWidth / 3,
+//                child: RecordButton(),
+//              ),
+//            ),
+//          ),
         ],
       ),
     );
@@ -167,39 +187,30 @@ class ClsHome extends StatelessWidget {
 
   Widget ConnectBody() {
     return Container(
+      width: sv.dblScreenWidth,
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
           Container(
-            height: sv.dblBodyHeight,
-            width: sv.dblScreenWidth,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                Container(
-                  width: sv.dblScreenWidth / 2,
-                  child: TextField(
-                    controller: ctlServerIP,
-                    decoration: new InputDecoration(labelText: ls.gs('ServerIP')),
-                    keyboardType: TextInputType.number,
-                    onChanged: (a) => gv.serverIP = ctlServerIP.text,
-                  ),
-                ),
-                Text(' '),
-                Container(
-                  // height: sv.dblBodyHeight / 4,
-                  // width: sv.dblScreenWidth / 4,
-                  child: Center(
-                    child: SizedBox(
-                      height: sv.dblDefaultFontSize * 2.5,
-                      width: sv.dblScreenWidth / 3,
-                      child: ConnectButton(),
-                    ),
-                  ),
-                ),
-              ],
+            width: sv.dblScreenWidth / 2,
+            child: TextField(
+              controller: ctlServerIP,
+              decoration: new InputDecoration(labelText: ls.gs('ServerIP')),
+              keyboardType: TextInputType.number,
+              onChanged: (a) => gv.serverIP = ctlServerIP.text,
+            ),
+          ),
+          Text(' '),
+          Container(
+            // height: sv.dblBodyHeight / 4,
+            // width: sv.dblScreenWidth / 4,
+            child: Center(
+              child: SizedBox(
+                height: sv.dblDefaultFontSize * 2.5,
+                width: sv.dblScreenWidth / 3,
+                child: ConnectButton(),
+              ),
             ),
           ),
         ],
@@ -220,36 +231,51 @@ class ClsHome extends StatelessWidget {
     try {
       ctlServerIP.text = gv.serverIP;
 
-      if (gv.bolFirstTimeLoginSuccess == true) {
-        return Scaffold(
-          resizeToAvoidBottomPadding: false,
-          appBar: PreferredSize(
-            child: AppBar(
-              title: Text(
-                ls.gs('Home'),
-                style: TextStyle(fontSize: sv.dblDefaultFontSize),
-              ),
-            ),
-            preferredSize: new Size.fromHeight(sv.dblTopHeight),
-          ),
-          body: Body(),
-          bottomNavigationBar: ClsBottom(),
-        );
+      //if (gv.bolFirstTimeInitHome == false) {
+      //gv.bolFirstTimeInitHome = true;
+      if (gv.bolCanRestartStt && gv.bolFirstTimeLoginSuccess) {
+        gv.sttStart();
+      }
+
+      //}
+
+      // Debug
+      //gv.bolFirstTimeLoginSuccess = true;
+
+      if (gv.bolSTTPrint) {
+        Printing.layoutPdf(onLayout: buildPdf);
       } else {
-        return Scaffold(
-          resizeToAvoidBottomPadding: false,
-          appBar: PreferredSize(
-            child: AppBar(
-              title: Text(
-                ls.gs('Home'),
-                style: TextStyle(fontSize: sv.dblDefaultFontSize),
+        if (gv.bolFirstTimeLoginSuccess == true) {
+          return Scaffold(
+            resizeToAvoidBottomPadding: true,
+            appBar: PreferredSize(
+              child: AppBar(
+                title: Text(
+                  ls.gs('Home'),
+                  style: TextStyle(fontSize: sv.dblDefaultFontSize),
+                ),
               ),
+              preferredSize: new Size.fromHeight(sv.dblTopHeight),
             ),
-            preferredSize: new Size.fromHeight(sv.dblTopHeight),
-          ),
-          body: ConnectBody(),
-          bottomNavigationBar: ClsBottom(),
-        );
+            body: Body(),
+            bottomNavigationBar: ClsBottom(),
+          );
+        } else {
+          return Scaffold(
+            resizeToAvoidBottomPadding: true,
+            appBar: PreferredSize(
+              child: AppBar(
+                title: Text(
+                  ls.gs('Home'),
+                  style: TextStyle(fontSize: sv.dblDefaultFontSize),
+                ),
+              ),
+              preferredSize: new Size.fromHeight(sv.dblTopHeight),
+            ),
+            body: ConnectBody(),
+            bottomNavigationBar: ClsBottom(),
+          );
+        }
       }
     } catch (err) {
       ut.funDebug('home wigdet build error: ' + err.toString());

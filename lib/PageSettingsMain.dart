@@ -57,6 +57,10 @@ class ClsSettingsMain extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    if (gv.sttIsListening) {
+      gv.sttCancel();
+    }
     // Set listSettingsMain according to gv.strLogin
     listSettingsMain = [
       // list of Buttons in this page

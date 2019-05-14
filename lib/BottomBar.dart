@@ -8,6 +8,7 @@ import 'package:flutter_redux/flutter_redux.dart';
 // Import Self Darts
 import 'GlobalVariables.dart';
 import 'LangStrings.dart';
+import 'Utilities.dart';
 
 // Import Pages
 import 'PageHome.dart';
@@ -37,7 +38,7 @@ class _ClsBottomState extends State<ClsBottom> {
           gv.gstrLastPage = gv.gstrCurPage;
           gv.gstrCurPage = 'Home';
 
-          print(1);
+          //ut.funDebug(1);
 
           // Goto Home
           Navigator.pushAndRemoveUntil(context,

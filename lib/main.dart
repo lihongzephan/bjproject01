@@ -8,6 +8,7 @@ import 'package:redux/redux.dart';
 import 'GlobalVariables.dart';
 import 'LangStrings.dart';
 import 'ScreenVariables.dart';
+import 'Utilities.dart';
 
 // Import Pages
 import 'PageHome.dart';
@@ -15,36 +16,78 @@ import 'PageSelectLanguage.dart';
 import 'PageSettingsMain.dart';
 
 // Main Program
-void main() {
+void main() async {
   // Set Orientation to PortraitUp
-  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
-      .then((_) {
-    // Init Screen Variables
-    sv.Init();
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
-    // Init Global Vars and SharedPreference
-    gv.Init().then((_) {
-      // Get Previous Selected Language from SharedPreferences, if any
-      gv.gstrLang = gv.getString('strLang');
-      if (gv.gstrLang != '') {
-        // Set Current Language
-        ls.setLang(gv.gstrLang);
+  await sv.Init();
 
-        // Already has Current Language, so set first page to SettingsMain
-        gv.gstrCurPage = 'SettingsMain';
-        gv.gstrLastPage = 'SettingsMain';
-      } else {
-        // First Time Use, set Current Language to English
-        ls.setLang('EN');
+  await gv.Init();
+
+  // Get Previous Selected Language from SharedPreferences, if any
+  gv.gstrLang = gv.getString('strLang');
+  if (gv.gstrLang != '') {
+    // Set Current Language
+    ls.setLang(gv.gstrLang);
+
+    // Already has Current Language, so set first page to SettingsMain
+    gv.gstrCurPage = 'SettingsMain';
+    gv.gstrLastPage = 'SettingsMain';
+  } else {
+    // First Time Use, set Current Language to English
+    ls.setLang('EN');
+  }
+
+  gv.serverIP = gv.getString('serverIP');
+
+  // Run MainApp
+  runApp(new MyApp());
+
+  // Init socket.io
+  //gv.initSocket();
+
+  void funTimerMain() async {
+    try {
+//      // Do Something Every 1 second
+//      if (gv.bolWantToDoSomething) {
+//
+//      }
+//
+//      if (DateTime.now().millisecondsSinceEpoch - gv.timLastTask1 > 5000) {
+//        // Do Something Every 5 seconds
+//
+//
+//        // Reset timLastTask1
+//        gv.timLastTask1 = DateTime.now().millisecondsSinceEpoch;
+//      }
+
+      try {
+        if (gv.bolCanWaitSTT == true && gv.bolFirstTimeLoginSuccess) {
+          if (DateTime.now().millisecondsSinceEpoch - gv.intStartWaitTime > gv.intMaxWaitTime) {
+            ut.funDebug('Start print stt');
+            ut.showToast('Start print stt');
+            gv.bolCanWaitSTT = false;
+            gv.bolSTTPrint = true;
+            gv.storeHome.dispatch(Actions.Increment);
+            //gv.socket.emit('RBPrintSTT', [gv.strID, gv.listText]);
+            //gv.listText = [];
+            //gv.storeHome.dispatch(Actions.Increment);
+          }
+        }
+      } catch (err) {
+        ut.funDebug('Socket Emit RB Print STT Error: Emit Failed');
+        ut.showToast('Socket Emit RB Print STT Error: Emit Failed');
       }
 
-      // Run MainApp
-      runApp(new MyApp());
+      Future.delayed(Duration(milliseconds: 1000), () async {
+        funTimerMain();
+      });
+    } catch (err) {
+      ut.funDebug('funTimerMain error: ' + err);
+    }
+  }
 
-      // Init socket.io
-      //gv.initSocket();
-    });
-  });
+  funTimerMain();
 }
 
 // Main App

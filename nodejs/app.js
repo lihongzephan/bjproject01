@@ -16,25 +16,34 @@ var Robot = require('./robot');
 var rb = new Robot();
 rb.funInit();
 
+rb.funStartIntervalCheckEye(false);
+
+funAutoMove();
+
 // Printer
-var PDFDocument = require("pdfkit");
-var printer = require('printer');
+// var PDFDocument = require("pdfkit");
+// var printer = require('printer');
 
 
 // Other vars
 
 // Vars for move RB
 var bolRBAutoMove = false;
+var bolRBCanMove = true;
+// var intPrintMustNotMoveTime = 30000;
 
 // Vars for print stt
 var timStartWaitCanPrint = Date.now();
 var intWaitPrintTime = 3000;
 var aryPrintSTT = [];
-var intSendPrintTime = 10000;
+// var intSendPrintTime = 10000;
 
 // Vars for auto print
-var timLastPrint = Date.now();
-var intMustPrintOnceTime = 540000;
+// var timLastPrint = Date.now();
+// var intMustPrintOnceTime = 540000;
+
+// Vars for auto move RB
+var intUSDis = 100;
 
 
 
@@ -189,6 +198,7 @@ socketAll.attach(serverClient);
 // var socketAll = ioClient.listen(serverClient);
 socketAll.on('connection', function (socket) {
     funUpdateServerMonitor("Client Connected, Socket ID: " + socket.id, false);
+    console.log("Client Connected, Socket ID: " + socket.id);
     // socket.emit("UpdateYourSocketID", socket.id);
 
     // Add Connection to Array with Empty User ID
@@ -207,6 +217,7 @@ socketAll.on('connection', function (socket) {
 
 
     socket.on('disconnect', function () {
+        console.log("Client Disconnected, Socket ID: " + socket.id);
         funUpdateServerMonitor("Client Disconnected, Socket ID: " + socket.id, false);
         for (let i = 0; i < aryClients.length; i++) {
             if (aryClients[i].connectionCode === socket.id) {
@@ -238,8 +249,8 @@ socketAll.on('connection', function (socket) {
         funRBMoveRobot(RBcode,aryRBMoveRobot);
     });
 
-    socket.on('CtlChangeSettings', function (RBCode, intMaxWords, intWaitTime, intAutoPrintTime, bolAutoMove) {
-        funCtlChangeSettings(RBCode, socket.id, intMaxWords, intWaitTime, intAutoPrintTime, bolAutoMove);
+    socket.on('CtlChangeSettings', function (RBCode, intMaxWords, intWaitTime, intAutoPrintTime, intRBUSDis, bolAutoMove) {
+        funCtlChangeSettings(RBCode, socket.id, intMaxWords, intWaitTime, intAutoPrintTime, intRBUSDis, bolAutoMove);
     });
 
 
@@ -255,10 +266,10 @@ function funCheckHB() {
     try {
 
         // Check for auto print
-        if (Date.now() - timLastPrint > intMustPrintOnceTime) {
-            console.log('auto print to keep printer on');
-            funPrint(['你好']);
-        }
+        // if (Date.now() - timLastPrint > intMustPrintOnceTime) {
+        //     console.log('auto print to keep printer on');
+        //     funPrint(['自动打印...']);
+        // }
 
         // Disconnect client if client has no HB for a long time
         for (let i = 0; i < aryClients.length; i++) {
@@ -286,7 +297,7 @@ funCheckHB();
 
 
 function funRBPrintSTT(RBcode, aryListText) {
-    funUpdateServerMonitor("Got RB Need Print STT to rb code: " + RBcode, true);
+    //funUpdateServerMonitor("Got RB Need Print STT to rb code: " + RBcode, true);
     console.log('Got print stt from server');
 
     // We need to have a time (short) to decide whether can print or not
@@ -299,15 +310,22 @@ function funRBPrintSTT(RBcode, aryListText) {
 
         aryPrintSTT = aryListText;
 
-        // print
+        // show all items
+        let strPrint = '';
         for (let i = 0; i < aryPrintSTT.length; i++) {
-            console.log('item ' + i.toString() + ' : ' + aryPrintSTT[i]);
+            strPrint += aryPrintSTT[i] + ';';
+            console.log('print item ' + i.toString() + ' : ' + aryPrintSTT[i]);
         }
 
-        funPrint(aryPrintSTT);
+        let bytesPrintValues = utf8.encode(strPrint);
+        let b64PrintValues = base64.encode(bytesPrintValues);
+
+        funPythonServerSendDataToClients('0000', 'PRINT:' + b64PrintValues);
+
+        //funPrint(aryPrintSTT);
     } else {
         // cannot print
-    }
+    } 
 }
 
 
@@ -320,8 +338,10 @@ function funRBMoveRobot(RBcode,aryRBMoveRobot) {
     // check move mode is manual
     if (bolRBAutoMove == false) {
         // can move
-        console.log('moveRobot: ' + aryRBMoveRobot[1].toString() + ' , ' + aryRBMoveRobot[2].toString());
-        rb.funMoveRobot(aryRBMoveRobot[0], aryRBMoveRobot[1], aryRBMoveRobot[2], aryRBMoveRobot[3]);
+        if (bolRBCanMove == true) {
+            console.log('moveRobot: ' + aryRBMoveRobot[1].toString() + ' , ' + aryRBMoveRobot[2].toString());
+            rb.funMoveRobot(aryRBMoveRobot[0], aryRBMoveRobot[1], aryRBMoveRobot[2], aryRBMoveRobot[3]);
+        }
     } else {
         // cannot move
     }
@@ -329,83 +349,293 @@ function funRBMoveRobot(RBcode,aryRBMoveRobot) {
 
 
 
-function funCtlChangeSettings(RBcode, socID, intMaxWords, intWaitTime, intAutoPrintTime, bolAutoMove) {
-    funUpdateServerMonitor("maxWords: " + intMaxWords.toString(), false);
-    funUpdateServerMonitor("waitTime: " + intWaitTime.toString(), false);
-    funUpdateServerMonitor("autoPrintTime: " + intAutoPrintTime.toString(), false);
-    funUpdateServerMonitor("bolAutoMove: " + bolAutoMove.toString(), false);
+function funCtlChangeSettings(RBcode, socID, intMaxWords, intWaitTime, intAutoPrintTime, intRBUSDis, bolAutoMove) {
+    //funUpdateServerMonitor("maxWords: " + intMaxWords.toString(), false);
+    //funUpdateServerMonitor("waitTime: " + intWaitTime.toString(), false);
+    //funUpdateServerMonitor("autoPrintTime: " + intAutoPrintTime.toString(), false);
+    //funUpdateServerMonitor("bolAutoMove: " + bolAutoMove.toString(), false);
+
+    console.log('Got change settings from rb control');
+    console.log("maxWords: " + intMaxWords.toString());
+    console.log("waitTime: " + intWaitTime.toString());
+    console.log("autoPrintTime: " + intAutoPrintTime.toString());
+    console.log("bolAutoMove: " + bolAutoMove.toString());
+    console.log('RB US Distance: ' + intRBUSDis.toString());
 
     // For phone in robot
     for (let i = 0; i < aryClients.length; i++) {
         if (aryClients[i].userId == RBcode && aryClients[i].connectionCode != socID) {
-            funUpdateServerMonitor("Sending intMaxWords & intWaitTime to phone in robot: " + aryClients[i].connectionCode, false);
+            funUpdateServerMonitor("Sending intMaxWords & intWaitTime & intAutoPrintTime to stt", false);
+            console.log("Sending intMaxWords & intWaitTime to stt");
             socketAll.to(`${aryClients[i].connectionCode}`).emit('sttSettings', [intMaxWords, intWaitTime]);
             break;
         }
     }
 
     // For RB
-    console.log('Got change settings from server');
-    console.log('intMustPrintOnceTime: ' + intAutoPrintTime.toString());
-    intMustPrintOnceTime = intAutoPrintTime;
-    bolRBAutoMove = bolAutoMove;
-    funUpdateServerMonitor("RB changed printOnceTime And bolAutoMove", false);
+    //intMustPrintOnceTime = intAutoPrintTime;
+    intUSDis = intRBUSDis;
 
-    if (bolRBAutoMove == true) {
-        // start auto move
+    if (bolAutoMove !== bolRBAutoMove) {
+        bolRBAutoMove = bolAutoMove;
 
-        // first stop all motors
+        // stop all motors
         rb.funStopRobot();
     }
+
+    console.log("RB changed bolAutoMove And usDis");
+    funUpdateServerMonitor("RB changed bolAutoMove And usDis", false);
+
+
+
+    // For Python
+    funPythonServerSendDataToClients('0000', 'SETTINGS:' + intAutoPrintTime.toString());
 }
 
 
-function funPrint(aryPrint) {
-    try {
-        timLastPrint = Date.now();
+//function funPrint(aryPrint) {
+    //try {
+        //if (bolRBCanMove) {
+            // rb.funStopRobot();
+            // bolRBCanMove = false;
+            // setTimeout(function() {
+            //     bolRBCanMove = true;
+            // }, intPrintMustNotMoveTime);
 
-        let doc = new PDFDocument;
+            // timLastPrint = Date.now();
 
-        console.log('doc start.');
+            // let doc = new PDFDocument;
 
-        doc.pipe(fs.createWriteStream('output.pdf'));
-        doc.font('/usr/local/share/fonts/Deng.ttf');
-        doc.fontSize(15);
+            // console.log('doc start.');
 
-        console.log('set font success');
+            // doc.pipe(fs.createWriteStream('output.pdf'));
+            // doc.font('/usr/local/share/fonts/Deng.ttf');
+            // doc.fontSize(15);
 
-        let y = 20;
-        let x = 50;
-        for (let i = 0; i < aryPrint.length; i++) {
-            console.log('TextingItem: ' + i.toString());
-            doc.text(aryPrint[i], x, y);
-            y += 20;
+            // //console.log('set font success');
+
+            // //let y = 20;
+            // //let x = 50;
+            // for (let i = 0; i < aryPrint.length; i++) {
+            //     console.log('Doc Texting Item: ' + i.toString());
+            //     doc.text(aryPrint[i]);
+            //     //doc.text(aryPrint[i], x, y);
+            //     //y += 20;
+            // }
+
+            // //doc.text('你好吗？', 50, 20);
+            // //doc.text('我很好。', 50, 40);
+            // //doc.text('hello hello', 50, 60);
+
+            // doc.end();
+            // console.log('doc end.');
+
+            // setTimeout(function() {
+            //     fs.writeFile('test.txt', ' ', (err) => {});
+            // }, 2000);
+            // //setTimeout(sendPrint, intSendPrintTime);
+        //}
+    //} catch (Err) {
+        //console.log('funPrint Error: ' + Err.message);
+    //}
+//}
+
+
+// function sendPrint() {
+//     console.log('send print start.');
+//     printer.printDirect({
+//         data: fs.readFileSync('./output.pdf'),
+//         printer: 'hp100_raspbian',
+//         type: 'PDF',
+//         success: function (jobID) {
+//             console.log("Print ID: " + jobID);
+//         },
+//         error: function(err){
+//             console.log('print module err: ' + err);
+//         }
+//     });
+// }
+
+
+
+function funAutoMove() {
+    let bolSeen = false;
+    setInterval( function () {
+        if (bolRBAutoMove && bolRBCanMove) {
+            bolSeen = false;
+            for (let i = 0; i < rb.intNoOfSensor; i++) {
+                if (parseInt(rb.arySensors[i].distance) < intUSDis) {
+                    bolSeen = true;
+                    // Default = turn right
+                    rb.funMoveRobot('F', 1, -1, 0);
+                    break;
+                }
+            }
+
+            if (!bolSeen) {
+                rb.funMoveRobot('F', 1, 1, 0);
+            }
+            //console.log('bolSeen: ' + bolSeen.toString());
         }
+    }, rb.intCheckEyeInterval);
+}
 
-        doc.end();
-        console.log('doc end.');
 
-        setTimeout(sendPrint, intSendPrintTime);
-    } catch (Err) {
-        console.log('funPrint Error: ' + Err.message);
+
+
+
+
+
+
+// Python server
+// vars
+var pythonNet = require('net');
+var pythonPORT = 10544;
+
+// pyClients contains all the Python Clients
+// actually, there is only 1
+var pyClients = [];
+
+
+// Below Bigaibot Related
+
+try {
+    var pythonServer = pythonNet.createServer(function (sock) {
+        try {
+            // If client connect, push client into List
+            let dtTemp = Date.now();
+            sock.name = sock.remoteAddress + ':' + sock.remotePort;
+            pyClients.push({ userID: "", socketID: sock, dtLastHB: dtTemp });
+
+            // No need to setEncoding
+            // sock.setEncoding('binary');
+
+            // Set No Delay so that WRITE will be sent immediately
+            sock.setNoDelay(true);
+
+            // ????????????? - ????????????????socket????
+
+            console.log('pyClient CONNECTED: ' + sock.remoteAddress + ':' + sock.remotePort);
+
+            funUpdateServerMonitor('pyClient CONNECTED: ' + sock.remoteAddress + ':' + sock.remotePort, true);
+
+            // ????socket?????????"data"?????????
+            sock.on('data', function (data) {
+                funPythonServerGotDataFromClients(sock, data);
+            });
+
+            // ????socket?????????"close"?????????
+            sock.on('close', function (data) {
+                console.log('pyClient DISCONNECTED: ' + sock.remoteAddress + ':' + sock.remotePort);
+                funUpdateServerMonitor('pyClient DISCONNECTED: ' + sock.remoteAddress + ':' + sock.remotePort, true);
+                funPythonServerRemoveUser(sock);
+            });
+
+            sock.on('error', function () {
+                // Error
+            });
+        } catch (err) {
+            console.log("pyClient Create Server Error: " + err);
+            funUpdateServerMonitor("pyClient Create Server Error: " + err, true);
+        }
+    }).listen(pythonPORT);
+} catch (Err) {
+    //
+}
+
+// console.log('python Socket Server Listening on: ' + pythonPORT);
+funUpdateConsole('python Socket Server Listening on: ' + pythonPORT, true);
+
+
+function funPythonServerGotDataFromClients(sock, data) {
+    try {
+        let i = 0;
+        let strTemp = data.toString('utf-8');
+        if (strTemp === 'HBHBHBHB') {
+            // At Least 8 bytes must be sent, for example, send only HB, EV3 will receive NOTHING
+            // Also, must use utf8Encode, otherwise EV3 will also receive NOTHING
+            // HeartBeat
+            let dtTemp = Date.now();
+            for (i = 0; i < pyClients.length; i++) {
+                if (pyClients[i].socketID.name === sock.name) {
+                    pyClients[i].dtLastHB = dtTemp;
+                }
+            }
+            let bolTemp = sock.write(utf8Encode('HBHBHBHB'));
+        } else if (strTemp.indexOf('|||LOGIN') === 0) {
+            // Login
+            for (i = 0; i < pyClients.length; i++) {
+                if (pyClients[i].socketID.name === sock.name) {
+                    // Suppose UserID is what after the first 8 chars |||LOGIN
+                    pyClients[i].userID = strTemp.substring(8);
+                    pyClients[i].socketID.write(utf8Encode('|LOGINOK'));
+                    console.log("pyClients Client Login ID: " + strTemp.substring(8) + "   Address: " + sock.name);
+                    funUpdateServerMonitor("pyClients Client Login ID: " + strTemp.substring(8) + "   Address: " + sock.name, true);
+                }
+            }
+        } else if (strTemp.indexOf('ANSWER::') === 0) {
+            let strAnswerTemp = strTemp.substring(8);
+
+            // Get Count
+            let intTemp = strAnswerTemp.indexOf(';');
+            let intCount = parseInt(strAnswerTemp.substring(0, intTemp));
+            let strAnswer = strAnswerTemp.substring(intTemp + 1);
+            funUpdateServerMonitor("pyClients Answer: " + strAnswer, true);
+
+            //socket.emit('BGBClientToServer', strAnswer);
+
+            //funAIMLEndRes(intCount, strAnswer);
+        } else {
+            //
+        }
+    } catch (err) {
+        console.log("funPythonServerGotDataFromClients Error: " + err);
+        funUpdateServerMonitor("funPythonServerGotDataFromClients Error: " + err, true);
     }
 }
 
 
-function sendPrint() {
-    console.log('send print start.');
-    printer.printDirect({
-        data: fs.readFileSync('./output.pdf'),
-        printer: 'hp100_raspbian',
-        type: 'PDF',
-        success: function (jobID) {
-            console.log("Print ID: " + jobID);
-        },
-        error: function(err){
-            console.log('print module err: ' + err);
+function funPythonServerRemoveUser(sock) {
+    try {
+        // Remove User
+        for (let i = 0; i < pyClients.length; i++) {
+            if (pyClients[i].socketID.name === sock.name) {
+                try {
+                    pyClients.splice(i, 1);
+                    console.log("pyClients Client Removed: " + sock.name);
+                    funUpdateServerMonitor("pyClients Client Removed: " + sock.name, true);
+                    break;
+                } catch (err) {
+                    //
+                }
+            }
         }
-    });
+    } catch (err) {
+        console.log("funPythonServerRemoveUser Error: " + err);
+        funUpdateServerMonitor("funPythonServerRemoveUser Error: " + err, true);
+    }
 }
+
+
+
+function funPythonServerSendDataToClients(strUserID, strMsg) {
+    try {
+        funUpdateServerMonitor("Start Send Data to pyClients ID: " + strUserID + " Message: " + strMsg, true);
+        // Send Data To Client
+        for (let i = 0; i < pyClients.length; i++) {
+            if (pyClients[i].userID === strUserID) {
+                pyClients[i].socketID.write(utf8Encode(strMsg));
+                console.log("Sent Data to pyClients ID: " + strUserID + " Message: " + strMsg);
+                funUpdateServerMonitor("Sent Data to pyClients ID: " + strUserID + " Message: " + strMsg, true);
+            }
+        }
+    } catch (err) {
+        console.log("funPythonServerSendDataToClients Error: " + err);
+        funUpdateServerMonitor("funPythonServerSendDataToClients Error: " + err, true);
+    }
+}
+
+
 
 
 

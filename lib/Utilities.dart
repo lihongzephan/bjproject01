@@ -1,6 +1,7 @@
 // This class contains utilities functions for all darts, this class keep constant for all projects
 
 // Import Flutter Darts
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
