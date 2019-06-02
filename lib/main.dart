@@ -64,13 +64,12 @@ void main() async {
       try {
         if (gv.bolCanWaitSTT == true && gv.bolFirstTimeLoginSuccess) {
           if (DateTime.now().millisecondsSinceEpoch - gv.intStartWaitTime > gv.intMaxWaitTime) {
-            ut.funDebug('Start print stt');
-            ut.showToast('Start print stt');
+            ut.funDebug('Start emit stt print');
+            ut.showToast('Start emit stt print');
             gv.bolCanWaitSTT = false;
-            gv.bolSTTPrint = true;
             gv.storeHome.dispatch(Actions.Increment);
-            //gv.socket.emit('RBPrintSTT', [gv.strID, gv.listText]);
-            //gv.listText = [];
+            gv.socket.emit('RBPrintSTT', [gv.strID, gv.listText]);
+            gv.listText = [];
             //gv.storeHome.dispatch(Actions.Increment);
           }
         }

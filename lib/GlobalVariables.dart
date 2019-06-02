@@ -238,7 +238,7 @@ class gv {
 
   static var intLastSTTStartTime = DateTime.now().millisecondsSinceEpoch;
 
-  static bool bolSTTPrint = false;
+  //static bool bolSTTPrint = false;
 
   static void sttStart() {
     ut.funDebug('stt start');
@@ -246,7 +246,7 @@ class gv {
     //if (sttIsListening == false) {
     //sttIsListening = true;
     sttSpeech.listen(locale: sttSelectedLang.code).then((result) {
-      bolCanRestartStt = true;
+      bolCanRestartStt = false;
       sttIsListening = true;
     });
     //}
@@ -256,6 +256,7 @@ class gv {
     ut.funDebug('stt cancel');
     sttSpeech.cancel().then((result) {
       sttIsListening = false;
+      bolCanRestartStt = true;
       //gv.storeHome.dispatch(Actions.Increment);
     });
   }
@@ -264,6 +265,7 @@ class gv {
     ut.funDebug('stt stop');
     sttSpeech.stop().then((result) {
       sttIsListening = false;
+      bolCanRestartStt = true;
       //gv.storeHome.dispatch(Actions.Increment);
     });
   }
@@ -331,8 +333,8 @@ class gv {
 
     sttIsListening = false;
 
-    if (bolCanRestartStt) {
-      bolCanRestartStt = false;
+    if (!bolCanRestartStt) {
+      bolCanRestartStt = true;
 
       Future.delayed(Duration(milliseconds: 500), () {
 
@@ -416,10 +418,6 @@ class gv {
     ut.funDebug('Total Word Length: ' + intTotalWordLength.toString());
   }
 
-  static sttPrint() {
-
-  }
-
   static Future<String> initReadFileMGC() async {
     try {
       //final directory = await getApplicationDocumentsDirectory();
@@ -463,6 +461,7 @@ class gv {
   static var intStartWaitTime = DateTime.now().millisecondsSinceEpoch;
   static bool bolCanWaitSTT = false;
   static bool bolFirstTimeInitHome = false;
+  static bool bolHomeBlackScreen = false;
 
   // Var For ShowDialog
   static int intShowDialogIndex = 0;

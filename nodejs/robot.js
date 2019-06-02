@@ -16,7 +16,7 @@ class Robot {
         this.aryMotor = [];
         this.arySensors = [];
         this.intDefaultMotorFrontPWM = 102;
-        this.intDefaultMotorTurnPWM = 166;
+        this.intDefaultMotorTurnPWM = 255;
         this.bolShowEyeValue = true;
         this.intCheckEyeInterval = 100;
     }
