@@ -459,22 +459,62 @@ function funCtlChangeSettings(RBcode, socID, intMaxWords, intWaitTime, intAutoPr
 
 
 function funAutoMove() {
-    let bolSeen = false;
+    let bolSeenL = false;
+    let bolSeenR = false;
+
+    // 0 - Bottom Right
+    // 1 - Bottom Left
+    // 2 - Upper Right
+    // 3 - Upper Left
     setInterval( function () {
         if (bolRBAutoMove && bolRBCanMove) {
-            bolSeen = false;
-            for (let i = 0; i < rb.intNoOfSensor; i++) {
-                if (parseInt(rb.arySensors[i].distance) < intUSDis) {
-                    bolSeen = true;
-                    // Default = turn right
+            bolSeenL = false;
+            bolSeenR = false;
+
+            if (parseInt(rb.arySensors[0].distance) < intUSDis) {
+                bolSeenR = true;
+            }
+            if (parseInt(rb.arySensors[1].distance) < intUSDis) {
+                bolSeenL = true;
+            }
+            if (parseInt(rb.arySensors[2].distance) < 30) {
+                bolSeenR = true;
+            }
+            if (parseInt(rb.arySensors[3].distance) < 30) {
+                bolSeenL = true;
+            }
+
+            if (bolSeenL) {
+                if (bolSeenR) {
+                    // Both Seen, Should Turn Right
                     rb.funMoveRobot('F', 1, -1, 0);
-                    break;
+                } else {
+                    // L See, R Not See, Should Turn Right
+                    rb.funMoveRobot('F', 1, -1, 0);
+                }
+            } else {
+                if (bolSeenR) {
+                    // L Not See, R See, Should Turn Left
+                    rb.funMoveRobot('F', -1, 1, 0);
+                } else {
+                    // Both Not See, Go Straight
+                    rb.funMoveRobot('F', 1, 1, 0);
                 }
             }
 
-            if (!bolSeen) {
-                rb.funMoveRobot('F', 1, 1, 0);
-            }
+//            for (let i = 0; i < rb.intNoOfSensor; i++) {
+//                if (parseInt(rb.arySensors[i].distance) < intUSDis) {
+//                    bolSeen = true;
+//                    // Default = turn right
+//                    rb.funMoveRobot('F', 1, -1, 0);
+//                    break;
+//                }
+//            }
+//            if (!bolSeenL) {
+//                rb.funMoveRobot('F', 1, 1, 0);
+//            }
+
+
             //console.log('bolSeen: ' + bolSeen.toString());
         }
     }, rb.intCheckEyeInterval);

@@ -16,7 +16,7 @@ class Robot {
         this.aryMotor = [];
         this.arySensors = [];
         this.intDefaultMotorFrontPWM = 102;
-        this.intDefaultMotorTurnPWM = 255;
+        this.intDefaultMotorTurnPWM = 166;
         this.bolShowEyeValue = true;
         this.intCheckEyeInterval = 100;
     }
@@ -67,7 +67,7 @@ class Robot {
             startTick: 0,
             endTick: 0,
             diff: 0,
-            distance: 0,
+            distance: 300,
             bolValid: true,
         });
 
@@ -77,7 +77,7 @@ class Robot {
             startTick: 0,
             endTick: 0,
             diff: 0,
-            distance: 0,
+            distance: 300,
             bolValid: true,
         });
 
@@ -87,7 +87,7 @@ class Robot {
             startTick: 0,
             endTick: 0,
             diff: 0,
-            distance: 0,
+            distance: 300,
             bolValid: true,
         });
 
@@ -97,7 +97,7 @@ class Robot {
             startTick: 0,
             endTick: 0,
             diff: 0,
-            distance: 0,
+            distance: 300,
             bolValid: true,
         });
 
