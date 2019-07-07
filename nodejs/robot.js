@@ -59,6 +59,12 @@ class Robot {
         // }
 
 
+        // Used Gpio
+        // 2, 3, 5, 6, 13, 14, 15, 16, 17, 19, 20, 21, 22, 23, 26, 27
+
+        // Not used Gpio
+        // 4, 7, 8, 9, 10, 11, 12, 18, 24, 25
+
         
         // For sensors
         this.arySensors.push( {
