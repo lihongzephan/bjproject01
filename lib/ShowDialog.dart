@@ -40,7 +40,7 @@ class sd {
                         gv.socket.emit('LogoutFromServer', []);
 
                         // Increment storeSettingsMain to refresh page
-                        gv.storeSettingsMain.dispatch(Actions.Increment);
+                        gv.storeSettingsMain.dispatch(GVActions.Increment);
                       },
                       child: Center(
                         child: Text(

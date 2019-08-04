@@ -21,12 +21,12 @@ import 'PageHome.dart';
 
 // Import Pages
 
-enum Actions {
+enum GVActions {
   Increment
 } // The reducer, which takes the previous count and increments it in response to an Increment action.
 
 int reducerRedux(int intSomeInteger, dynamic action) {
-  if (action == Actions.Increment) {
+  if (action == GVActions.Increment) {
     return intSomeInteger + 1;
   }
   return intSomeInteger;
@@ -257,7 +257,7 @@ class gv {
     sttSpeech.cancel().then((result) {
       sttIsListening = false;
       bolCanRestartStt = true;
-      //gv.storeHome.dispatch(Actions.Increment);
+      //gv.storeHome.dispatch(GVActions.Increment);
     });
   }
 
@@ -266,7 +266,7 @@ class gv {
     sttSpeech.stop().then((result) {
       sttIsListening = false;
       bolCanRestartStt = true;
-      //gv.storeHome.dispatch(Actions.Increment);
+      //gv.storeHome.dispatch(GVActions.Increment);
     });
   }
 
@@ -282,7 +282,7 @@ class gv {
     ut.funDebug('stt OnRecognitionStarted');
     //bolCanRestartStt = true;
     //sttIsListening = true;
-    //gv.storeHome.dispatch(Actions.Increment);
+    //gv.storeHome.dispatch(GVActions.Increment);
   }
 
   static void sttOnRecognitionResult(String text) async {
@@ -315,7 +315,7 @@ class gv {
           //ut.showToast('listText length: ' + listText.length.toString());
 
           // Refresh home page
-          //storeHome.dispatch(Actions.Increment);
+          //storeHome.dispatch(GVActions.Increment);
 
           // Check if the total no. of words store
           // in listText is large enough to send
@@ -343,7 +343,7 @@ class gv {
           listText.add(sttTranscription);
           sttLastWords = sttTranscription;
           sttTranscription = '';
-          storeHome.dispatch(Actions.Increment);
+          storeHome.dispatch(GVActions.Increment);
 
           // Check the length of the listText
           //ut.showToast('listText length: ' + listText.length.toString());
@@ -370,7 +370,7 @@ class gv {
 //              gv.listText = [];
 //              ut.funDebug('Emit RB Print STT');
 //              ut.showToast('Successfully Emit RB Print STT');
-//              //gv.storeHome.dispatch(Actions.Increment);
+//              //gv.storeHome.dispatch(GVActions.Increment);
 //            }
 //          }
 //        } catch (err) {
@@ -484,7 +484,7 @@ class gv {
 
   static initSocket() async {
     if (!gbolSIOConnected) {
-      socket = await SocketIOManager().createInstance(URI);
+      socket = await SocketIOManager().createInstance(SocketOptions(URI, transports: [Transports.WEB_SOCKET, Transports.POLLING] ));
     }
     socket.onConnect((data) {
       gbolSIOConnected = true;
@@ -496,7 +496,7 @@ class gv {
       if (!bolFirstTimeLoginSuccess) {
         bolFirstTimeLoginSuccess = true;
         if (gv.gstrCurPage == 'Home') {
-          gv.storeHome.dispatch(Actions.Increment);
+          gv.storeHome.dispatch(GVActions.Increment);
         }
       }
 
@@ -528,7 +528,7 @@ class gv {
 //        bolFirstTimeLoginSuccess = false;
 //
 //        if (gv.gstrCurPage == 'Home') {
-//          gv.storeHome.dispatch(Actions.Increment);
+//          gv.storeHome.dispatch(GVActions.Increment);
 //        }
     });
 
@@ -573,7 +573,7 @@ class gv {
 //          sttStart();
 //        }
 //
-//        storeHome.dispatch(Actions.Increment);
+//        storeHome.dispatch(GVActions.Increment);
 
       if (socket != null) {
         // ut.funDebug('Sending HB...' + DateTime.now().toString());
@@ -596,7 +596,7 @@ class gv {
 //          socket.emit('RBPrintSTT', [strID, gv.listText]);
 //          gv.listText = [];
 //          ut.funDebug('Emit RB Print STT');
-//          //gv.storeHome.dispatch(Actions.Increment);
+//          //gv.storeHome.dispatch(GVActions.Increment);
 //        }
 //      }
     }
@@ -606,7 +606,7 @@ class gv {
   static void resetStates() {
     switch (gstrCurPage) {
       case 'SettingsMain':
-        storeSettingsMain.dispatch(Actions.Increment);
+        storeSettingsMain.dispatch(GVActions.Increment);
         break;
       default:
         break;

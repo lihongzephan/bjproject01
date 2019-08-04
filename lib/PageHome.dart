@@ -94,7 +94,7 @@ class ClsHome extends StatelessWidget {
         gv.bolHomeBlackScreen = true;
       }
       ut.funDebug('2');
-      gv.storeHome.dispatch(Actions.Increment);
+      gv.storeHome.dispatch(GVActions.Increment);
     } catch (err) {
       ut.funDebug('funToggleBlackScreen Error: ' + err);
     }

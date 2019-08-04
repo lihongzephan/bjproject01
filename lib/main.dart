@@ -67,7 +67,7 @@ void main() async {
             ut.funDebug('Start emit stt print');
             ut.showToast('Start emit stt print');
             gv.bolCanWaitSTT = false;
-            gv.storeHome.dispatch(Actions.Increment);
+            gv.storeHome.dispatch(GVActions.Increment);
             gv.socket.emit('RBPrintSTT', [gv.strID, gv.listText]);
             gv.listText = [];
             //gv.storeHome.dispatch(Actions.Increment);
