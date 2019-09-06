@@ -12,11 +12,11 @@ const usMsPerCm = 1e6/34321;
 class Robot {
     constructor() {
         this.intNoOfMotor = 4;
-        this.intNoOfSensor = 4;
+        this.intNoOfSensor = 6;
         this.aryMotor = [];
         this.arySensors = [];
         this.intDefaultMotorFrontPWM = 102;
-        this.intDefaultMotorTurnPWM = 166;
+        this.intDefaultMotorTurnPWM = 255;
         this.bolShowEyeValue = true;
         this.intCheckEyeInterval = 100;
     }
@@ -59,11 +59,11 @@ class Robot {
         // }
 
 
-        // Used Gpio
-        // 2, 3, 5, 6, 13, 14, 15, 16, 17, 19, 20, 21, 22, 23, 26, 27
+        // Used gpio
+        // 2, 3, 5, 6, 7, 8, 9, 10, 13, 14, 15, 16, 17, 19, 20, 21, 22, 23, 26, 27
 
-        // Not used Gpio
-        // 4, 7, 8, 9, 10, 11, 12, 18, 24, 25
+        // Not used gpio
+        // 4, 11, 12, 18, 24
 
         
         // For sensors
@@ -100,6 +100,26 @@ class Robot {
         this.arySensors.push( {
             trigger: new Gpio(14, {mode: Gpio.OUTPUT}),
             echo: new Gpio(15, {mode: Gpio.INPUT, alert: true}),
+            startTick: 0,
+            endTick: 0,
+            diff: 0,
+            distance: 300,
+            bolValid: true,
+        });
+
+        this.arySensors.push( {
+            trigger: new Gpio(8, {mode: Gpio.OUTPUT}),
+            echo: new Gpio(7, {mode: Gpio.INPUT, alert: true}),
+            startTick: 0,
+            endTick: 0,
+            diff: 0,
+            distance: 300,
+            bolValid: true,
+        });
+
+        this.arySensors.push( {
+            trigger: new Gpio(9, {mode: Gpio.OUTPUT}),
+            echo: new Gpio(10, {mode: Gpio.INPUT, alert: true}),
             startTick: 0,
             endTick: 0,
             diff: 0,

@@ -484,6 +484,16 @@ function funAutoMove() {
                 bolSeenL = true;
             }
 
+            if (parseInt(rb.arySensors[4].distance) < intUSDis) {
+                bolSeenR = true;
+            }
+            if (parseInt(rb.arySensors[5].distance) < intUSDis) {
+                bolSeenL = true;
+            }
+
+            //console.log('R: ' + bolSeenR.toString());
+            //console.log('L: ' + bolSeenL.toString());
+
             if (bolSeenL) {
                 if (bolSeenR) {
                     // Both Seen, Should Turn Right
